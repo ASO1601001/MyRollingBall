@@ -35,6 +35,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     int mRectY;
     float mVX; //ボールのx軸方向への速度
     float mVY; //ボールのy軸方向への速度
+    float dx;
+    float dy;
+    int i = 0;
 
     long mFrom; //前回、センサーから加速度を取得した時間
     long mTo; //今回、センサーから加速度を取得した時間
@@ -77,8 +80,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float t = (float)(mTo - mFrom);
             t = t/1000.0f;
 
-            float dx = mVX * t + x * t * t / 2.0f;
-            float dy = mVY * t + y * t * t / 2.0f;
+            dx = mVX * t + x * t * t / 2.0f;
+            dy = mVY * t + y * t * t / 2.0f;
             mBallX = mBallX + dx * COEF;
             mBallY = mBallY + dy * COEF;
             mVX = mVX + x * t;
@@ -98,20 +101,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }else if(mBallY + RADIUS > mSurfaceHeight && mVY > 0){
                 mVY = -mVY / 1.5f;
                 mBallY = mSurfaceHeight-RADIUS;
+            }else if(mBallX - RADIUS > 600 && mBallX - RADIUS < 700 && mBallY - RADIUS > 800 && mBallY - RADIUS < 1000){
+                //ここが当たり判定
+                mVX = -mVX / 1.5f;
+                mBallX -= RADIUS;
+                mVY = -mVY / 1.5f;
+                mBallY -= RADIUS;
             }
 
             mFrom = System.currentTimeMillis();
             drawCanvas();
-
-            //衝突判定
-            if( mBallY > mRectY && mBallY  < mRectY  - RADIUS){
-                if( mBallX > mRectX && mBallX < mRectX + RADIUS){
-                    mVY = -mVY;
-                    mBallY  = mBallY - RADIUS;
-                    isAtari = true;
-                    Toast.makeText(this, "テスト", Toast.LENGTH_LONG).show();
-                }
-            }
         }
     }
 

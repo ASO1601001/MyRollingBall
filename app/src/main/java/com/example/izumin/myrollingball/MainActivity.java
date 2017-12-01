@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.Sensor;
@@ -17,7 +18,11 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
+
+import static android.R.attr.width;
+import static com.example.izumin.myrollingball.R.attr.height;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener,SurfaceHolder.Callback{
     SensorManager mSensorManager;
@@ -25,14 +30,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     SurfaceHolder mHolder;
     int mSurfaceWidth;
     int mSurfaceHeight;
+    Canvas c;
 
+    int stop;
     static final float RADIUS = 50.0f;
     static final float COEF = 1000.0f;
 
     float mBallX; //ボールの現在のx座標
     float mBallY; //ボールの現在のy座標
-    int mRectX;
-    int mRectY;
     float mVX; //ボールのx軸方向への速度
     float mVY; //ボールのy軸方向への速度
     float dx;
@@ -54,6 +59,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         SurfaceView surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         mHolder = surfaceView.getHolder();
         mHolder.addCallback(this);
+
+        Button rbtn = (Button) findViewById(R.id.resetbtn);
+        rbtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                reset();
+            }
+        });
+        stop = 0;
     }
 
     @Override
@@ -80,33 +94,46 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float t = (float)(mTo - mFrom);
             t = t/1000.0f;
 
-            dx = mVX * t + x * t * t / 2.0f;
-            dy = mVY * t + y * t * t / 2.0f;
-            mBallX = mBallX + dx * COEF;
-            mBallY = mBallY + dy * COEF;
-            mVX = mVX + x * t;
-            mVY = mVY + y * t;
+            if(stop == 0){
+                dx = mVX * t + x * t * t / 2.0f;
+                dy = mVY * t + y * t * t / 2.0f;
+                mBallX = mBallX + dx * COEF;
+                mBallY = mBallY + dy * COEF;
+                mVX = mVX + x * t;
+                mVY = mVY + y * t;
 
-            if(mBallX - RADIUS < 0 && mVX < 0){
-                mVX = -mVX / 1.5f;
-                mBallX = RADIUS;
-            }else if(mBallX + RADIUS > mSurfaceWidth && mVX > 0){
-                mVX = -mVX / 1.5f;
-                mBallX = mSurfaceWidth -RADIUS;
-            }
+                if(mBallX - RADIUS < 0 && mVX < 0){
+                    mVX = -mVX / 1.5f;
+                    mBallX = RADIUS;
+                }else if(mBallX + RADIUS > mSurfaceWidth && mVX > 0){
+                    mVX = -mVX / 1.5f;
+                    mBallX = mSurfaceWidth -RADIUS;
+                }
 
-            if(mBallY - RADIUS < 0 && mVY < 0){
-                mVY = -mVY / 1.5f;
-                mBallY = RADIUS;
-            }else if(mBallY + RADIUS > mSurfaceHeight && mVY > 0){
-                mVY = -mVY / 1.5f;
-                mBallY = mSurfaceHeight-RADIUS;
-            }else if(mBallX - RADIUS > 600 && mBallX - RADIUS < 700 && mBallY - RADIUS > 800 && mBallY - RADIUS < 1000){
-                //ここが当たり判定
-                mVX = -mVX / 1.5f;
-                mBallX -= RADIUS;
-                mVY = -mVY / 1.5f;
-                mBallY -= RADIUS;
+                if(mBallY - RADIUS < 0 && mVY < 0){
+                    mVY = -mVY / 1.5f;
+                    mBallY = RADIUS;
+                }else if(mBallY + RADIUS > mSurfaceHeight && mVY > 0){
+                    mVY = -mVY / 1.5f;
+                    mBallY = mSurfaceHeight-RADIUS;
+                }else if(mBallX + RADIUS > 250 && mBallX - RADIUS < 400 && mBallY + RADIUS > 500 && mBallY - RADIUS < 600){
+                    //ここが当たり判定
+                    gamefinish(false);
+                }else if(mBallX + RADIUS > 700 && mBallX - RADIUS < 800 && mBallY + RADIUS > 450 && mBallY - RADIUS < 600) {
+                    //ここが当たり判定
+                    gamefinish(false);
+                }else if(mBallX + RADIUS > 150 && mBallX - RADIUS < 400 && mBallY + RADIUS > 1300 && mBallY - RADIUS < 1400) {
+                    //ここが当たり判定
+                    gamefinish(false);
+                }else if(mBallX + RADIUS > 600 && mBallX - RADIUS < 850 && mBallY + RADIUS > 1100 && mBallY - RADIUS < 1200) {
+                    //ここが当たり判定
+                    gamefinish(false);
+                }else if(mBallX + RADIUS > 400 && mBallX - RADIUS < 600 && mBallY + RADIUS > 700 && mBallY - RADIUS < 750) {
+                    //ここが当たり判定
+                    gamefinish(true);
+                }
+            }else{
+
             }
 
             mFrom = System.currentTimeMillis();
@@ -128,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mSurfaceWidth = width;
         mSurfaceHeight = height;
         mBallX = width / 2;
-        mBallY = height / 2;
+        mBallY = height / 7;
         mVX = 0;
         mVY = 0;
     }
@@ -139,21 +166,45 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void drawCanvas(){
-        Canvas c = mHolder.lockCanvas();
+        c = mHolder.lockCanvas();
         c.drawColor(Color.CYAN);
         Paint paint = new Paint();
-        mRectX = 500;
-        mRectY = 800;
-            paint.setColor(Color.MAGENTA);
-            c.drawCircle(mBallX,mBallY,RADIUS,paint);
+        paint.setColor(Color.MAGENTA);
+        c.drawCircle(mBallX,mBallY,RADIUS,paint);
 
 
-            Paint paint2 = new Paint();
-            paint2.setColor(Color.YELLOW);
-            Rect rect = new Rect(100, 100, 200, 300);
-            rect.offset(mRectX,mRectY);
-            c.drawRect(rect,paint2);
+        Paint paint2 = new Paint();
+        paint2.setColor(Color.YELLOW);
+        Rect rect = new Rect(250, 500, 400, 600);
+        Rect rect2 = new Rect(700, 450, 800, 600);
+        Rect rect3 = new Rect(150, 1300, 400, 1400);
+        Rect rect4 = new Rect(600, 1100, 850, 1200);
+        c.drawRect(rect,paint2);
+        c.drawRect(rect2, paint2);
+        c.drawRect(rect3, paint2);
+        c.drawRect(rect4, paint2);
+
+        paint2.setColor(Color.RED);
+        rect = new Rect(400,700,600,750);
+        c.drawRect(rect,paint2);
 
         mHolder.unlockCanvasAndPost(c);
+    }
+
+    public void gamefinish(boolean or){
+        stop = 1;
+        if(or == true){
+            Toast.makeText(this, "ゴール", Toast.LENGTH_LONG).show();
+        }else{
+            Toast.makeText(this, "リセットボタンを押して、もう一度チャレンジ", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void reset(){
+        stop = 0;
+        mBallX = mSurfaceWidth / 2;
+        mBallY = mSurfaceHeight / 7;
+        mVX = 0;
+        mVY = 0;
     }
 }
